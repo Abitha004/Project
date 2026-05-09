@@ -1,0 +1,432 @@
+package demo;
+import java.sql.*;
+import java.util.*;
+
+// ====================== STUDENT CLASS ======================
+class Student {
+
+    String studentId;
+    String name;
+    double cgpa;
+    String email;
+    double attendance;
+    String resultStatus;
+
+    public Student(String studentId, String name,
+                   double cgpa, String email,
+                   double attendance, String resultStatus) {
+
+        this.studentId = studentId;
+        this.name = name;
+        this.cgpa = cgpa;
+        this.email = email;
+        this.attendance = attendance;
+        this.resultStatus = resultStatus;
+    }
+
+    public void display() {
+
+        System.out.println("\n-----------------------------------");
+        System.out.println("Student ID   : " + studentId);
+        System.out.println("Name         : " + name);
+        System.out.println("CGPA         : " + cgpa);
+        System.out.println("Email        : " + email);
+        System.out.println("Attendance   : " + attendance + "%");
+        System.out.println("ResultStatus : " + resultStatus);
+        System.out.println("-----------------------------------");
+    }
+}
+
+// ====================== DB CONNECTION ======================
+class DBConnection {
+
+    static final String URL =
+            "jdbc:mysql://localhost:3306/studentdb";
+
+    static final String USER = "root";
+
+    static final String PASSWORD = "root";
+
+    public static Connection getConnection() {
+
+        Connection con = null;
+
+        try {
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            con = DriverManager.getConnection(
+                    URL, USER, PASSWORD);
+
+            System.out.println("[DB CONNECTED]");
+
+        } catch (Exception e) {
+
+            System.out.println("[DB CONNECTION FAILED]");            e.printStackTrace();
+        }
+
+        return con;
+    }
+}
+
+// ====================== MAIN CLASS ======================
+public class StudentsManagementSystem {
+
+    static Scanner sc = new Scanner(System.in);
+
+    // ================= DSA STRUCTURES =================
+    static ArrayList<Student> studentList =
+            new ArrayList<>();
+
+    static HashMap<String, Student> studentMap =
+            new HashMap<>();
+
+    // =====================================================
+    //                  ADD STUDENT
+    // =====================================================
+    static void addStudent() {
+
+        try {
+
+            System.out.println("\n===== ADD STUDENT =====");
+
+            System.out.print("Enter Student ID : ");
+            String id = sc.nextLine();
+
+            System.out.print("Enter Name : ");
+            String name = sc.nextLine();
+
+            System.out.print("Enter CGPA : ");
+            double cgpa = sc.nextDouble();
+            sc.nextLine();
+
+            System.out.print("Enter Email : ");
+            String email = sc.nextLine();
+
+            System.out.print("Enter Attendance : ");
+            double attendance = sc.nextDouble();
+            sc.nextLine();
+
+            System.out.print("Enter Result Status : ");
+            String status = sc.nextLine();
+
+            Student s = new Student(
+                    id, name, cgpa,
+                    email, attendance, status);
+
+            // ===== DSA =====
+            studentList.add(s);
+            studentMap.put(id, s);
+
+            // ===== DATABASE =====
+            Connection con = DBConnection.getConnection();
+
+            String query =
+                    "INSERT INTO students VALUES (?, ?, ?, ?, ?, ?)";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ps.setString(1, id);
+            ps.setString(2, name);
+            ps.setDouble(3, cgpa);
+            ps.setString(4, email);
+            ps.setDouble(5, attendance);
+            ps.setString(6, status);
+
+            int rows = ps.executeUpdate();
+
+            if (rows > 0) {
+
+                System.out.println(
+                        "\n[SUCCESS] Student Added Successfully!");
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    // =====================================================
+    //               DISPLAY ALL STUDENTS
+    // =====================================================
+    static void displayStudents() {
+
+        if (studentList.isEmpty()) {
+
+            System.out.println("\nNo Students Found!");
+            return;
+        }
+
+        System.out.println("\n===== STUDENT RECORDS =====");
+
+        for (Student s : studentList) {
+
+            s.display();
+        }
+    }
+
+    // =====================================================
+    //                  SEARCH STUDENT
+    // =====================================================
+    static void searchStudent() {
+
+        System.out.print(
+                "\nEnter Student ID to Search : ");
+
+        String id = sc.nextLine();
+
+        // ===== HASHMAP SEARCH =====
+        if (studentMap.containsKey(id)) {
+
+            Student s = studentMap.get(id);
+
+            System.out.println("\n[STUDENT FOUND]");
+            s.display();
+
+        } else {
+
+            System.out.println("\n[NOT FOUND]");
+        }
+    }
+
+    // =====================================================
+    //                  UPDATE STUDENT
+    // =====================================================
+    static void updateStudent() {
+
+        System.out.print(
+                "\nEnter Student ID to Update : ");
+
+        String id = sc.nextLine();
+
+        if (studentMap.containsKey(id)) {
+
+            Student s = studentMap.get(id);
+
+            System.out.print("Enter New CGPA : ");
+            double newCgpa = sc.nextDouble();
+            sc.nextLine();
+
+            s.cgpa = newCgpa;
+
+            try {
+
+                Connection con =
+                        DBConnection.getConnection();
+
+                String query =
+                        "UPDATE students SET cgpa=? WHERE student_id=?";
+
+                PreparedStatement ps =
+                        con.prepareStatement(query);
+
+                ps.setDouble(1, newCgpa);
+                ps.setString(2, id);
+
+                int rows = ps.executeUpdate();
+
+                if (rows > 0) {
+
+                    System.out.println(
+                            "\n[SUCCESS] Record Updated!");
+                }
+
+                con.close();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+
+        } else {
+
+            System.out.println("\n[STUDENT NOT FOUND]");
+        }
+    }
+
+    // =====================================================
+    //                  DELETE STUDENT
+    // =====================================================
+    static void deleteStudent() {
+
+        System.out.print(
+                "\nEnter Student ID to Delete : ");
+
+        String id = sc.nextLine();
+
+        if (studentMap.containsKey(id)) {
+
+            Student s = studentMap.get(id);
+
+            // ===== REMOVE FROM DSA =====
+            studentList.remove(s);
+            studentMap.remove(id);
+
+            try {
+
+                Connection con =
+                        DBConnection.getConnection();
+
+                String query =
+                        "DELETE FROM students WHERE student_id=?";
+
+                PreparedStatement ps =
+                        con.prepareStatement(query);
+
+                ps.setString(1, id);
+
+                int rows = ps.executeUpdate();
+
+                if (rows > 0) {
+
+                    System.out.println(
+                            "\n[SUCCESS] Student Deleted!");
+                }
+
+                con.close();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+
+        } else {
+
+            System.out.println("\n[STUDENT NOT FOUND]");
+        }
+    }
+
+    // =====================================================
+    //                  SORT BY CGPA
+    // =====================================================
+    static void sortByCGPA() {
+
+        if (studentList.isEmpty()) {
+
+            System.out.println("\nNo Students Found!");
+            return;
+        }
+
+        // ===== SORTING =====
+        Collections.sort(studentList,
+                (a, b) -> Double.compare(b.cgpa, a.cgpa));
+
+        System.out.println(
+                "\n===== SORTED BY CGPA =====");
+
+        for (Student s : studentList) {
+
+            s.display();
+        }
+    }
+
+    // =====================================================
+    //          FILTER BY RESULT STATUS
+    // =====================================================
+    static void filterByResultStatus() {
+
+        if (studentList.isEmpty()) {
+
+            System.out.println("\nNo Students Found!");
+            return;
+        }
+
+        System.out.print(
+                "\nEnter Result Status (PASS/FAIL) : ");
+
+        String status = sc.nextLine();
+
+        boolean found = false;
+
+        System.out.println(
+                "\n===== FILTERED STUDENTS =====");
+
+        for (Student s : studentList) {
+
+            if (s.resultStatus.equalsIgnoreCase(status)) {
+
+                s.display();
+                found = true;
+            }
+        }
+
+        if (!found) {
+
+            System.out.println(
+                    "\nNo Students Found With Status : "
+                            + status);
+        }
+    }
+
+    // =====================================================
+    //                        MENU
+    // =====================================================
+    public static void main(String[] args) {
+
+        int choice;
+
+        do {
+
+            System.out.println("\n================================");
+            System.out.println(" STUDENT MANAGEMENT SYSTEM ");
+            System.out.println(" Java + DSA + DBMS ");
+            System.out.println("================================");
+
+            System.out.println("1. Add Student");
+            System.out.println("2. Display Students");
+            System.out.println("3. Search Student");
+            System.out.println("4. Update Student");
+            System.out.println("5. Delete Student");
+            System.out.println("6. Sort By CGPA");
+            System.out.println("7. Filter By Result Status");
+            System.out.println("0. Exit");
+
+            System.out.print("\nEnter Choice : ");
+
+            choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+
+                case 1:
+                    addStudent();
+                    break;
+
+                case 2:
+                    displayStudents();
+                    break;
+
+                case 3:
+                    searchStudent();
+                    break;
+
+                case 4:
+                    updateStudent();
+                    break;
+
+                case 5:
+                    deleteStudent();
+                    break;
+
+                case 6:
+                    sortByCGPA();
+                    break;
+
+                case 7:
+                    filterByResultStatus();
+                    break;
+
+                case 0:
+                    System.out.println("\nSystem Closed!");
+                    break;
+
+                default:
+                    System.out.println("\nInvalid Choice!");
+            }
+
+        } while (choice != 0);
+    }
