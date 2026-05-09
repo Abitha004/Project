@@ -1,0 +1,31 @@
+use employye;
+CREATE TABLE emp6(
+id INT PRIMARY KEY,
+first_name varchar(20),
+last_name varchar(20),
+dob Date,
+department varchar(25),
+position  varchar(30),
+salary Decimal(10,2)
+);
+
+INSERT INTO emp6 VALUES(1,'jhon',' smith', '1985-03-15',' HR', 'HR Manager' , 80000 );
+INSERT INTO emp6 VALUES(2,'Emily','johnson', '1990-06-25','IT', 'IT Specialist', 68000);
+INSERT INTO emp6 VALUES(3,' Michael','williams', '1988-11-12',' Finance','Accountant',65000);
+INSERT INTO emp6 VALUES(4,'Jessica',' Brown', '1992-09-05','Marketing',' Marketing', 55000);
+INSERT INTO emp6 VALUES(5,'David','Taylor', '1987-07-18',' Sales',' Sales Manager', 75000);
+INSERT INTO emp6 VALUES(6,' Emma',' Davis', '1991-04-30','HR','HR Assistant', 45000);
+INSERT INTO emp6 VALUES(7,'Daniel',' Miller','1989-12-06',' IT',' IT Manager', 90000);
+INSERT INTO emp6 VALUES(8,' Olivia','Wilson','1993-08-10','Finance','Financial Analyst',70000);
+
+SELECT *FROM emp6;
+UPDATE  emp6 SET first_name='will' WHERE id=1;
+UPDATE  emp6 SET dob='1999-06-25' WHERE id=2;
+UPDATE  emp6 SET last_name='jackson' WHERE id=3;
+UPDATE  emp6 SET position='digital marketing' WHERE id=4;
+UPDATE  emp6 SET first_name='swift' WHERE id=5;
+
+SELECT * FROM emp6;
+SELECT * FROM employye_db.emp6;
+SELECT * from employye.emp6 where salary>65000.00 AND department='IT';
+
